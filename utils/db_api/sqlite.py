@@ -47,7 +47,8 @@ class Database:
         CREATE TABLE Questions (
         question_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         question varchar(300) NOT NULL,
-        category varchar(255) NOT NULL
+        category varchar(255) NOT NULL,
+        openness varchar(255) NOT NULL
         );
         """
         self.execute(sql, commit=True)
@@ -56,7 +57,8 @@ class Database:
         sql = """
         CREATE TABLE FormsQuestions (
         f_questions_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        text varchar(255) NOT NULL
+        text varchar(255) NOT NULL,
+        status varchar(255) NOT NULL
         );
         """
         self.execute(sql, commit=True)
@@ -110,16 +112,17 @@ class Database:
         return self.execute(sql, parameters=(status, user_id), commit=True)
 
     # Questions table operations
-    def add_question(self, question: str, category: str):
-        sql = "INSERT INTO Questions(question, category) VALUES (?, ?)"
-        self.execute(sql, parameters=(question, category), commit=True)
+    def add_question(self, question: str, category: str, openness: str):
+        sql = "INSERT INTO Questions(question, category, openness) VALUES (?, ?, ?)"
+        self.execute(sql, parameters=(question, category, openness), commit=True)
 
     def populate_questions(self):
         questions = ['Это первый вопрос?', "Это второй вопрос?", "Это третий вопрос?", "Это четвертый вопрос?",
                      "Это пятый вопрос?"]
         category = ['Музыка', "Кино", "Путешествия", "Музыка", "Шопинг"]
+        openness = ["Формальный", "Приятельский", "Дружеский", "Близость", "Исповедь"]
         for ind, question in enumerate(questions):
-            self.add_question(question=questions[ind], category=category[ind])
+            self.add_question(question=questions[ind], category=category[ind], openness=openness[ind])
 
     def select_all_questions(self):
         sql = "SELECT * FROM Questions"
@@ -142,14 +145,27 @@ class Database:
         sql = "UPDATE Questions SET category=? WHERE question_id=?"
         return self.execute(sql, parameters=(category, question_id), commit=True)
 
+    def delete_question(self, question_id: int):
+        sql = "DELETE FROM Questions WHERE question_id=?"
+        return self.execute(sql, parameters=(question_id,), commit=True)
+
     # Forms operations
-    def add_forms_question(self, text):
-        sql = "INSERT INTO FormsQuestions(text) VALUES (?)"
-        self.execute(sql, parameters=(text,), commit=True)
+    def add_forms_question(self, text, status="Inactive"):
+        sql = "INSERT INTO FormsQuestions(text, status) VALUES (?, ?)"
+        self.execute(sql, parameters=(text, status), commit=True)
+
+    def select_f_question_form(self, **kwargs):
+        sql = "SELECT * FROM FormsQuestions WHERE "
+        sql, parameters = self.format_args(sql, kwargs)
+        return self.execute(sql, parameters=parameters, fetchone=True)
 
     def select_all_forms_questions(self):
         sql = "SELECT * FROM FormsQuestions"
         return self.execute(sql, fetchall=True)
+
+    def activate_f_question(self, f_questions_id: int, status="Active"):
+        sql = "UPDATE FormsQuestions SET status=? WHERE f_questions_id=?"
+        return self.execute(sql, parameters=(status, f_questions_id), commit=True)
 
     def populate_forms(self):
         questions_list = ['Семейное положение', "Отношение к гороскопу", "Домашние животные", "Характер темперамент",
@@ -157,6 +173,20 @@ class Database:
         for question in questions_list:
             print(question)
             self.add_forms_question(question)
+
+    def delete_f_question(self, f_questions_id: int):
+        sql = "DELETE FROM FormsQuestions WHERE f_questions_id=?"
+        return self.execute(sql, parameters=(f_questions_id,), commit=True)
+
+    # FormsAnswers operations
+    def select_all_f_answers(self, **kwargs):
+        sql = "SELECT text FROM FormsAnswers WHERE "
+        sql, parameters = self.format_args(sql, kwargs)
+        return self.execute(sql, parameters=parameters, fetchall=True)
+
+    def insert_new_form_answer(self, form_question_id: int, text: str):
+        sql = "INSERT INTO FormsAnswers(form_question_id, text) VALUES (?, ?)"
+        self.execute(sql, parameters=(form_question_id, text), commit=True)
 
 
 def logger(statement):

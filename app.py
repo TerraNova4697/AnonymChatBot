@@ -26,14 +26,14 @@ async def on_startup(dispatcher):
         db.create_table_form_questions()
     except Exception as err:
         print(err)
-    # db.populate_forms()
+    db.populate_forms()
 
     try:
         db.create_table_forms_answers()
     except Exception as err:
         print(err)
 
-    # db.populate_questions()
+    db.populate_questions()
 
     # Загружаем списки администраторов
     list_of_managers = db.select_all_admins_user_id(status="Active")

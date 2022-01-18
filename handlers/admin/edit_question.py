@@ -4,10 +4,11 @@ from aiogram.types import CallbackQuery
 
 from filters import IsOwnerCall, IsAdminCall, IsOwner, IsAdmin
 from keyboards.inline.admin.admin_callback_datas import choose_question_callback, edit_question_keyboard, \
-    edit_category_keyboard
+    edit_category_keyboard, delete_question_callback
 from keyboards.inline.admin.edit_category_keyboard import create_edit_category_keyboard
 from keyboards.inline.admin.edit_question_keyboard import create_edit_question_keyboard
 from keyboards.inline.admin.list_of_questions_keyboard import create_list_of_questions_keyboard
+from keyboards.inline.admin.question_deletion import create_question_deletion_keyboard
 from keyboards.inline.cancel_button import cancel_button
 from loader import dp, bot, db
 from states.edit_question import EditQuestion
@@ -86,7 +87,8 @@ async def input_new_category(call: CallbackQuery, state: FSMContext, callback_da
     await call.answer()
     question_id = callback_data.get("question_id")
     await state.update_data({"question_id": question_id})
-    await bot.edit_message_text(text="Введите новое значение", chat_id=call.message.chat.id,
+    await bot.edit_message_text(text="Введите новое значение вручную или выберите из существующих",
+                                chat_id=call.message.chat.id,
                                 message_id=call.message.message_id, reply_markup=create_edit_category_keyboard())
     await EditQuestion.EditCategory.set()
 
@@ -106,7 +108,7 @@ async def cancel_input(call: CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(IsOwnerCall(), edit_category_keyboard.filter(action="edit_cat"),
                            state=EditQuestion.EditCategory)
-@dp.callback_query_handler(IsOwnerCall(), edit_category_keyboard.filter(action="edit_cat"),
+@dp.callback_query_handler(IsAdminCall(), edit_category_keyboard.filter(action="edit_cat"),
                            state=EditQuestion.EditCategory)
 async def update_category(call: CallbackQuery, state: FSMContext, callback_data: dict):
     new_category = callback_data.get("category")
@@ -130,4 +132,55 @@ async def update_category(message: types.Message, state: FSMContext):
     await bot.send_message(chat_id=message.chat.id, text=f"Обновлен: \n{question[1]} ({question[2]})"
                                                          f"\n\nКатегория: {question[2]}",
                            reply_markup=create_edit_question_keyboard(int(question_id)))
+    await state.finish()
+
+
+@dp.callback_query_handler(IsOwnerCall(), edit_question_keyboard.filter(action="delete"))
+@dp.callback_query_handler(IsAdminCall(), edit_question_keyboard.filter(action="delete"))
+async def confirm_deletion(call: CallbackQuery(), state: FSMContext, callback_data: dict):
+    await call.answer()
+    question_id = callback_data.get("question_id")
+    question = db.select_question(question_id=int(question_id))
+    print(question)
+    await bot.edit_message_text(text=f"Вы собираетесь удалить вопрос: \n\n{question[1]}\n\nУверены?",
+                                reply_markup=create_question_deletion_keyboard(int(question_id)),
+                                chat_id=call.message.chat.id, message_id=call.message.message_id)
+    await EditQuestion.DeleteQuestion.set()
+
+
+@dp.callback_query_handler(IsOwnerCall(), delete_question_callback.filter(action="cancel"),
+                           state=EditQuestion.DeleteQuestion)
+@dp.callback_query_handler(IsAdminCall(), delete_question_callback.filter(action="cancel"),
+                           state=EditQuestion.DeleteQuestion)
+async def cancel_deletion(call: CallbackQuery, callback_data: dict, state: FSMContext):
+    await call.answer()
+    question_id = callback_data.get("question_id")
+    question = db.select_question(question_id=int(question_id))
+    await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                text=f"{question[1]}\n\nКатегория: {question[2]}",
+                                reply_markup=create_edit_question_keyboard(int(question_id)))
+    await state.finish()
+
+
+@dp.callback_query_handler(IsOwnerCall(), delete_question_callback.filter(action="delete"),
+                           state=EditQuestion.DeleteQuestion)
+@dp.callback_query_handler(IsAdminCall(), delete_question_callback.filter(action="delete"),
+                           state=EditQuestion.DeleteQuestion)
+async def delete_question(call: CallbackQuery, state: FSMContext, callback_data: dict):
+    await call.answer()
+    question_id = callback_data.get("question_id")
+    db.delete_question(question_id=int(question_id))
+    questions = db.select_all_questions()
+    text_begin = "Вопрос был удален. \nНа данный момент имеются следующие вопросы: \n\n"
+    list_of_questions = ''
+    if len(questions) > 0:
+        list_of_questions += "\n".join([
+            f"{str(num + 1)}. {question[1]} ({question[2]})" for num, question in enumerate(questions)
+        ])
+    else:
+        list_of_questions = 'Пока нет вопросов'
+    text_end = '\n\nКликните на номер вопроса, чтобы редактировать'
+    await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                text=text_begin + list_of_questions + text_end,
+                                reply_markup=create_list_of_questions_keyboard(questions))
     await state.finish()

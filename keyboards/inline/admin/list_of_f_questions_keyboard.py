@@ -8,6 +8,6 @@ def create_list_of_forms_questions_keyboard(questions):
     for num, question in enumerate(questions):
         keyboard.insert(InlineKeyboardButton(text=str(num + 1), callback_data=choose_f_question_callback
                                              .new(action="choose_f_quest", f_question_id=str(question[0]))))
-    keyboard.row(InlineKeyboardButton(text="Добавить вопрос", callback_data="add_question"))
+    keyboard.row(InlineKeyboardButton(text="Добавить вопрос", callback_data="add_f_question"))
     keyboard.row(InlineKeyboardButton(text="Назад", callback_data="to_admin_panel"))
     return keyboard
