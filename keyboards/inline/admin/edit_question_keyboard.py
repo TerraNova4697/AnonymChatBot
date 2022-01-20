@@ -14,6 +14,10 @@ def create_edit_question_keyboard(question_id):
                                  .new(action="edit_cat", question_id=str(question_id)))
         ],
         [
+            InlineKeyboardButton(text="Изменить уровень откровенности", callback_data=edit_question_keyboard
+                                 .new(action='edit_open', question_id=str(question_id)))
+        ],
+        [
             InlineKeyboardButton(text="Удалить", callback_data=edit_question_keyboard
                                  .new(action="delete", question_id=str(question_id)))
         ],

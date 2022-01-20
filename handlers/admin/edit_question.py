@@ -4,7 +4,8 @@ from aiogram.types import CallbackQuery
 
 from filters import IsOwnerCall, IsAdminCall, IsOwner, IsAdmin
 from keyboards.inline.admin.admin_callback_datas import choose_question_callback, edit_question_keyboard, \
-    edit_category_keyboard, delete_question_callback
+    edit_category_keyboard, delete_question_callback, choose_openness_callback
+from keyboards.inline.admin.choose_opennes_keyboard import choose_openness_keyboard
 from keyboards.inline.admin.edit_category_keyboard import create_edit_category_keyboard
 from keyboards.inline.admin.edit_question_keyboard import create_edit_question_keyboard
 from keyboards.inline.admin.list_of_questions_keyboard import create_list_of_questions_keyboard
@@ -21,7 +22,7 @@ async def send_question_menu(call: CallbackQuery(), callback_data: dict):
     question_id = callback_data.get("question_id")
     question = db.select_question(question_id=int(question_id))
     await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                text=f"{question[1]}\n\nКатегория: {question[2]}",
+                                text=f"{question[1]}\n\nКатегория: {question[2]}\n\nУровень откровенности: {question[3]}",
                                 reply_markup=create_edit_question_keyboard(int(question_id)))
 
 
@@ -63,7 +64,7 @@ async def cancel_input(call: CallbackQuery, state: FSMContext):
     question_id = data.get("question_id")
     question = db.select_question(question_id=int(question_id))
     await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                text=f"{question[1]}\n\nКатегория: {question[2]}",
+                                text=f"{question[1]}\n\nКатегория: {question[2]}\n\nУровень откровенности: {question[3]}",
                                 reply_markup=create_edit_question_keyboard(int(question_id)))
     await state.finish()
 
@@ -76,7 +77,7 @@ async def update_questions_text(message: types.Message, state: FSMContext):
     db.update_questions_text(question_id=int(question_id), question=message.text)
     question = db.select_question(question_id=int(question_id))
     await bot.send_message(chat_id=message.chat.id, text=f"Обновлен: \n{question[1]} ({question[2]})"
-                                                         f"\n\nКатегория: {question[2]}",
+                                                         f"\n\nКатегория: {question[2]}\n\nУровень откровенности: {question[3]}",
                            reply_markup=create_edit_question_keyboard(int(question_id)))
     await state.finish()
 
@@ -101,7 +102,7 @@ async def cancel_input(call: CallbackQuery, state: FSMContext):
     question_id = data.get("question_id")
     question = db.select_question(question_id=int(question_id))
     await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                text=f"{question[1]}\n\nКатегория: {question[2]}",
+                                text=f"{question[1]}\n\nКатегория: {question[2]}\n\nУровень откровенности: {question[3]}",
                                 reply_markup=create_edit_question_keyboard(int(question_id)))
     await state.finish()
 
@@ -117,7 +118,48 @@ async def update_category(call: CallbackQuery, state: FSMContext, callback_data:
     db.update_questions_category(category=new_category, question_id=int(question_id))
     question = db.select_question(question_id=int(question_id))
     await bot.send_message(chat_id=call.message.chat.id, text=f"Обновлен: \n{question[1]} ({question[2]})"
-                                                              f"\n\nКатегория: {question[2]}",
+                                                              f"\n\nКатегория: {question[2]}\n\nУровень откровенности: {question[3]}",
+                           reply_markup=create_edit_question_keyboard(int(question_id)))
+    await state.finish()
+
+
+@dp.callback_query_handler(IsOwnerCall(), edit_question_keyboard.filter(action="edit_open"))
+@dp.callback_query_handler(IsAdminCall(), edit_question_keyboard.filter(action="edit_open"))
+async def edit_openness(call: CallbackQuery, state: FSMContext, callback_data: dict):
+    await call.answer()
+    question_id = callback_data.get("question_id")
+    await state.update_data({"question_id": question_id})
+    await bot.send_message(chat_id=call.message.chat.id, text="Выберите уровень откровенности",
+                           reply_markup=choose_openness_keyboard)
+    await EditQuestion.EditOpenness.set()
+
+
+@dp.callback_query_handler(IsOwnerCall(), state=EditQuestion.EditOpenness, text="cancel")
+@dp.callback_query_handler(IsAdminCall(), state=EditQuestion.EditOpenness, text="cancel")
+async def cancel_input(call: CallbackQuery, state: FSMContext):
+    await call.answer()
+    data = await state.get_data()
+    question_id = data.get("question_id")
+    question = db.select_question(question_id=int(question_id))
+    await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                text=f"{question[1]}\n\nКатегория: {question[2]}\n\nУровень откровенности: {question[3]}",
+                                reply_markup=create_edit_question_keyboard(int(question_id)))
+    await state.finish()
+
+
+@dp.callback_query_handler(IsOwnerCall(), choose_openness_callback.filter(action="openness"),
+                           state=EditQuestion.EditOpenness)
+@dp.callback_query_handler(IsAdminCall(), choose_openness_callback.filter(action="openness"),
+                           state=EditQuestion.EditOpenness)
+async def update_openness(call: CallbackQuery, state: FSMContext, callback_data: dict):
+    await call.answer()
+    data = await state.get_data()
+    question_id = data.get("question_id")
+    openness = callback_data.get("openness")
+    db.update_questions_openness(question_id=int(question_id), openness=openness)
+    question = db.select_question(question_id=int(question_id))
+    await bot.send_message(chat_id=call.message.chat.id, text=f"Обновлен: \n{question[1]} ({question[2]})"
+                                                              f"\n\nКатегория: {question[2]}\n\nУровень откровенности: {question[3]}",
                            reply_markup=create_edit_question_keyboard(int(question_id)))
     await state.finish()
 
@@ -130,7 +172,7 @@ async def update_category(message: types.Message, state: FSMContext):
     db.update_questions_category(category=message.text, question_id=int(question_id))
     question = db.select_question(question_id=int(question_id))
     await bot.send_message(chat_id=message.chat.id, text=f"Обновлен: \n{question[1]} ({question[2]})"
-                                                         f"\n\nКатегория: {question[2]}",
+                                                         f"\n\nКатегория: {question[2]}\n\nУрвоень откровенности: {question[3]}",
                            reply_markup=create_edit_question_keyboard(int(question_id)))
     await state.finish()
 
@@ -157,7 +199,7 @@ async def cancel_deletion(call: CallbackQuery, callback_data: dict, state: FSMCo
     question_id = callback_data.get("question_id")
     question = db.select_question(question_id=int(question_id))
     await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                text=f"{question[1]}\n\nКатегория: {question[2]}",
+                                text=f"{question[1]}\n\nКатегория: {question[2]}\n\nУровень откровенности: {question[3]}",
                                 reply_markup=create_edit_question_keyboard(int(question_id)))
     await state.finish()
 

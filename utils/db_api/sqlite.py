@@ -145,6 +145,10 @@ class Database:
         sql = "UPDATE Questions SET category=? WHERE question_id=?"
         return self.execute(sql, parameters=(category, question_id), commit=True)
 
+    def update_questions_openness(self, openness: str, question_id: int):
+        sql = "UPDATE Questions SET openness=? WHERE question_id=?"
+        return self.execute(sql, parameters=(openness, question_id), commit=True)
+
     def delete_question(self, question_id: int):
         sql = "DELETE FROM Questions WHERE question_id=?"
         return self.execute(sql, parameters=(question_id,), commit=True)
