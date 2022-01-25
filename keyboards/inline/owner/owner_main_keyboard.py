@@ -7,6 +7,10 @@ owner_main_keyboard = InlineKeyboardMarkup(row_width=1,
                                                                         callback_data="edit_admin")
                                                ],
                                                [
+                                                    InlineKeyboardButton(text="Редактировать вопросы теста",
+                                                                         callback_data="change_test")
+                                               ],
+                                               [
                                                    InlineKeyboardButton(text='Изменить вопросы собеседников',
                                                                         callback_data="change_questions")
                                                ],

@@ -1,5 +1,7 @@
 import sqlite3
 
+from data import variables
+
 
 class Database:
     def __init__(self, path_to_db='main.db'):
@@ -69,6 +71,48 @@ class Database:
         answer_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
         form_question_id int NOT NULL,
         text varchar(255) NOT NULL
+        );
+        """
+        self.execute(sql, commit=True)
+
+    def create_table_user(self):
+        sql = """
+        CREATE TABLE Users (
+        user_id int NOT NULL,
+        name varchar(255),
+        status varchar(255) NOT NULL,
+        PRIMARY KEY (user_id)
+        );
+        """
+        self.execute(sql, commit=True)
+
+    def create_table_quiz_questions(self):
+        sql = """
+        CREATE TABLE QuizQuestions (
+        question_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        user_id int NOT NULL,
+        question varchar NOT NULL
+        );
+        """
+        self.execute(sql, commit=True)
+
+    def create_table_test_questions(self):
+        sql = """
+        CREATE TABLE TestQuestions (
+        question_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        question_text varchar NOT NULL,
+        is_active varchar(255) NOT NULL
+        );
+        """
+        self.execute(sql, commit=True)
+
+    def create_table_test_variants(self):
+        sql = """
+        CREATE TABLE TestAnswers (
+        answer_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        answer_text varchar NOT NULL,
+        is_true varchar(255) NOT NULL,
+        question_id int NOT NULL
         );
         """
         self.execute(sql, commit=True)
@@ -191,6 +235,70 @@ class Database:
     def insert_new_form_answer(self, form_question_id: int, text: str):
         sql = "INSERT INTO FormsAnswers(form_question_id, text) VALUES (?, ?)"
         self.execute(sql, parameters=(form_question_id, text), commit=True)
+
+    # Users table operations
+    def add_user(self, user_id: int, status: str = "Inactive"):
+        sql = "INSERT INTO Users(user_id, status) VALUES (?, ?)"
+        self.execute(sql, parameters=(user_id, status), commit=True)
+
+    def activate_user(self, user_id: int, status: str):
+        sql = "UPDATE Users SET status=? WHERE user_id=?"
+        self.execute(sql, parameters=(status, user_id), commit=True)
+
+    # TestQuestions table operations
+    def add_question_into_test_questions(self, question_text: str, is_active="False"):
+        sql = "INSERT INTO TestQuestions(question_text, is_active) VALUES (?, ?)"
+        self.execute(sql, parameters=(question_text, is_active,), commit=True)
+
+    def select_all_test_questions(self):
+        sql = "SELECT * FROM TestQuestions WHERE is_active='True'"
+        return self.execute(sql, fetchall=True)
+
+    def select_test_question_id(self, **kwargs):
+        sql = "SELECT question_id FROM TestQuestions WHERE "
+        sql, parameters = self.format_args(sql=sql, parameters=kwargs)
+        return self.execute(sql, parameters, fetchone=True)
+
+    def select_test_question_text(self, **kwargs):
+        sql = "SELECT question_text FROM TestQuestions WHERE "
+        sql, parameters = self.format_args(sql=sql, parameters=kwargs)
+        return self.execute(sql, parameters, fetchone=True)
+
+    def select_test_question(self, **kwargs):
+        sql = "SELECT * FROM TestQuestions WHERE "
+        sql, parameters = self.format_args(sql=sql, parameters=kwargs)
+        return self.execute(sql, parameters, fetchone=True)
+
+    def activate_test_question(self, question_id: int, is_active="True"):
+        sql = "UPDATE TestQuestions SET is_active=? WHERE question_id=?"
+        self.execute(sql, parameters=(is_active, question_id), commit=True)
+
+    def populate_test_with_answers(self):
+        try:
+            for question in variables.test2.keys():
+                self.add_question_into_test_questions(question_text=question, is_active="True")
+                curr_question = self.select_test_question(question_text=question)
+                list_of_options = variables.test2[curr_question[1]]
+                print(list_of_options)
+                for option in list_of_options:
+                    print(option)
+                    self.add_test_option(answer_text=option[0], is_true=option[1], question_id=curr_question[0])
+        except Exception as err:
+            print(err)
+
+    # TestOptions table operations
+    def add_test_option(self, answer_text: str, is_true: str, question_id: int):
+        sql = "INSERT INTO TestAnswers(answer_text, is_true, question_id) VALUES (?, ?, ?)"
+        self.execute(sql, parameters=(answer_text, is_true, question_id), commit=True)
+
+    def select_test_answers(self, **kwargs):
+        sql = "SELECT answer_text, is_true, question_id FROM TestAnswers WHERE "
+        sql, parameters = self.format_args(sql=sql, parameters=kwargs)
+        return self.execute(sql, parameters, fetchall=True)
+
+    def delete_question_option(self, question_id: int):
+        sql = "DELETE FROM TestAnswers WHERE question_id=?"
+        return self.execute(sql, parameters=(question_id,), commit=True)
 
 
 def logger(statement):

@@ -8,3 +8,5 @@ choose_openness_callback = CallbackData("add_question", "action", "openness")
 
 choose_f_question_callback = CallbackData("question", "action", "f_question_id")
 edit_f_question_callback = CallbackData("edit_f_question", "action", "f_question_id")
+
+edit_test_callback = CallbackData("edit_test", "action", "question_id")
