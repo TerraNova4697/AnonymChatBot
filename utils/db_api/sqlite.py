@@ -273,6 +273,14 @@ class Database:
         sql = "UPDATE TestQuestions SET is_active=? WHERE question_id=?"
         self.execute(sql, parameters=(is_active, question_id), commit=True)
 
+    def update_test_question_text(self, question_id: int, question_text: str):
+        sql = "UPDATE TestQuestions SET question_text=? WHERE question_id=?"
+        self.execute(sql, parameters=(question_text, question_id), commit=True)
+
+    def delete_test_question(self, question_id: int):
+        sql = "DELETE FROM TestQuestions WHERE question_id=?"
+        return self.execute(sql, parameters=(question_id,), commit=True)
+
     def populate_test_with_answers(self):
         try:
             for question in variables.test2.keys():
@@ -293,6 +301,11 @@ class Database:
 
     def select_test_answers(self, **kwargs):
         sql = "SELECT answer_text, is_true, question_id FROM TestAnswers WHERE "
+        sql, parameters = self.format_args(sql=sql, parameters=kwargs)
+        return self.execute(sql, parameters, fetchall=True)
+
+    def select_all_test_answers(self, **kwargs):
+        sql = "SELECT * FROM TestAnswers WHERE "
         sql, parameters = self.format_args(sql=sql, parameters=kwargs)
         return self.execute(sql, parameters, fetchall=True)
 

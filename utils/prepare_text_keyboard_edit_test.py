@@ -15,6 +15,7 @@ def create_text_and_keyboard():
 
     keyboard = InlineKeyboardMarkup(row_width=6)
     for num, question in enumerate(list_of_questions):
+        print(test[question][0][2])
         keyboard.insert(InlineKeyboardButton(text=f"{num + 1}", callback_data=edit_test_callback
                                              .new(action="edit_test", question_id=str(test[question][0][2]))))
     keyboard.row(InlineKeyboardButton(text="Добавить вопрос", callback_data="add_test_question"))
@@ -32,6 +33,18 @@ def create_options_text(options):
         if option[1] == "True":
             is_true = "Верный"
         text += f"{str(num + 1)}. {option[0]} ({is_true})\n"
+    return text
+
+
+def create_options_text_for_editing(options):
+    if len(options) == 0:
+        return "Пока нет вариантов ответа"
+    text = ''
+    for num, option in enumerate(options):
+        is_true = 'Не верный'
+        if option[2] == "True":
+            is_true = "Верный"
+        text += f"{str(num + 1)}. {option[1]} ({is_true})\n"
     return text
 
 

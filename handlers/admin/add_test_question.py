@@ -140,7 +140,7 @@ async def on_finish_clicked(call: CallbackQuery, state: FSMContext):
         text, keyboard = create_text_and_keyboard()
         await bot.send_message(chat_id=call.message.chat.id, text=text, reply_markup=keyboard)
         question_text = db.select_test_question_text(question_id=new_test_question_id)
-        variables.test[question_text[1]] = options
+        variables.test[question_text[0]] = options
         await state.finish()
 
 
