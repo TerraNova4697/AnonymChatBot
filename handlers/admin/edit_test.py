@@ -37,7 +37,7 @@ async def navigate_to_admin_panel(call: CallbackQuery):
 
 @dp.callback_query_handler(IsAdminCall(), edit_test_callback.filter(action="edit_test"))
 @dp.callback_query_handler(IsOwnerCall(), edit_test_callback.filter(action="edit_test"))
-async def on_question_clicked(call: CallbackQuery, callback_data: dict):
+async def on_question_clicked(call: CallbackQuery, state: FSMContext, callback_data: dict):
     question_id = callback_data.get("question_id")
     text = db.select_test_question_text(question_id=question_id)
     question_text = text[0]
@@ -47,6 +47,7 @@ async def on_question_clicked(call: CallbackQuery, callback_data: dict):
     await bot.send_message(chat_id=call.message.chat.id, text=f"{question_text}\n\nВарианты ответов:\n\n{options_text}",
                            reply_markup=keyboard)
     await EditTestQuestion.Edit.set()
+    await state.update_data({"question_id": int(question_id)})
 
 
 @dp.callback_query_handler(IsAdminCall(), text='nav_to_t_quest', state=EditTestQuestion.Edit)

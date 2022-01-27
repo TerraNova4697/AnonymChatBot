@@ -5,3 +5,6 @@ class EditTestQuestion(StatesGroup):
     Edit = State()
     Delete = State()
     ChangeText = State()
+    EditOption = State()
+    DeleteOption = State()
+    NewOptionInput = State()

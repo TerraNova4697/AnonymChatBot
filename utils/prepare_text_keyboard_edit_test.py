@@ -15,7 +15,7 @@ def create_text_and_keyboard():
 
     keyboard = InlineKeyboardMarkup(row_width=6)
     for num, question in enumerate(list_of_questions):
-        print(test[question][0][2])
+        print(test[question])
         keyboard.insert(InlineKeyboardButton(text=f"{num + 1}", callback_data=edit_test_callback
                                              .new(action="edit_test", question_id=str(test[question][0][2]))))
     keyboard.row(InlineKeyboardButton(text="Добавить вопрос", callback_data="add_test_question"))

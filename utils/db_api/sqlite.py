@@ -313,6 +313,14 @@ class Database:
         sql = "DELETE FROM TestAnswers WHERE question_id=?"
         return self.execute(sql, parameters=(question_id,), commit=True)
 
+    def delete_option(self, answer_id: int):
+        sql = "DELETE FROM TestAnswers WHERE answer_id=?"
+        return self.execute(sql, parameters=(answer_id,), commit=True)
+
+    def update_options_text(self, answer_id: int, answer_text: str):
+        sql = "UPDATE TestAnswers SET answer_text=? WHERE answer_id=?"
+        self.execute(sql, parameters=(answer_text, answer_id), commit=True)
+
 
 def logger(statement):
     print(f"""
