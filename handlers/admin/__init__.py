@@ -11,3 +11,4 @@ from . import add_test_question
 from . import delete_test_question
 from . import change_test_question_name
 from . import edit_option
+from . import add_test_option

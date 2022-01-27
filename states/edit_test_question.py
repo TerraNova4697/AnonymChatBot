@@ -8,3 +8,5 @@ class EditTestQuestion(StatesGroup):
     EditOption = State()
     DeleteOption = State()
     NewOptionInput = State()
+    AddCorrectOption = State()
+    AddIncorrectOption = State()

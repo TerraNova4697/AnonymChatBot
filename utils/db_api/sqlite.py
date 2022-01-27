@@ -287,7 +287,7 @@ class Database:
                 self.add_question_into_test_questions(question_text=question, is_active="True")
                 curr_question = self.select_test_question(question_text=question)
                 list_of_options = variables.test2[curr_question[1]]
-                print(list_of_options)
+                # print(list_of_options)
                 for option in list_of_options:
                     print(option)
                     self.add_test_option(answer_text=option[0], is_true=option[1], question_id=curr_question[0])

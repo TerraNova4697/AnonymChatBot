@@ -59,7 +59,8 @@ async def on_cancel_clicked(call: CallbackQuery, state: FSMContext):
 @dp.callback_query_handler(IsAdminCall(), state=AddNewQuestion.EditTestQuestion, text="add_correct")
 async def on_add_correct_clicked(call: CallbackQuery, state: FSMContext):
     await call.answer()
-    await bot.send_message(chat_id=call.message.chat.id, text="Введите вариант ответа", reply_markup=cancel_button)
+    await bot.send_message(chat_id=call.message.chat.id, text="Введите верный вариант ответа",
+                           reply_markup=cancel_button)
     await AddNewQuestion.AddCorrect.set()
 
 
@@ -95,7 +96,8 @@ async def on_new_question_input(message: types.Message, state: FSMContext):
 @dp.callback_query_handler(IsAdminCall(), state=AddNewQuestion.EditTestQuestion, text="add_incorrect")
 async def on_add_incorrect_clicked(call: CallbackQuery, state: FSMContext):
     await call.answer()
-    await bot.send_message(chat_id=call.message.chat.id, text="Введите вариант ответа", reply_markup=cancel_button)
+    await bot.send_message(chat_id=call.message.chat.id, text="Введите неверный вариант ответа",
+                           reply_markup=cancel_button)
     await AddNewQuestion.AddIncorrect.set()
 
 
