@@ -13,7 +13,7 @@ from utils.prepare_text_keyboard_edit_test import create_options_text_for_editin
 
 @dp.callback_query_handler(IsAdminCall(), text="add_correct", state=EditTestQuestion.Edit)
 @dp.callback_query_handler(IsOwnerCall(), text="add_correct", state=EditTestQuestion.Edit)
-async def on_add_correct_clicked(call: CallbackQuery, state: FSMContext):
+async def on_add_correct_clicked(call: CallbackQuery):
     await call.answer()
     await bot.send_message(chat_id=call.message.chat.id, text="Введите верный вариант ответа",
                            reply_markup=cancel_button)
