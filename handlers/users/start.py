@@ -5,7 +5,8 @@ from aiogram.types import CallbackQuery
 
 from data import variables
 from keyboards.inline.user.callback_datas import quiz_callback
-from keyboards.inline.user.continue_button import continue_button, accept_button, try_again_button
+from keyboards.inline.user.continue_button import continue_button, accept_button, try_again_button, go_on_button, \
+    fill_in_button
 from keyboards.inline.user.quiz_keyboard import create_quiz_keyboard
 from loader import dp, bot, db
 from states.quiz import QuizState
@@ -81,7 +82,7 @@ async def check_answer(call: CallbackQuery, state: FSMContext, callback_data: di
         if points >= num_of_questions-1:
             db.activate_user(user_id=int(call.message.chat.id), status="Active")
             await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                        text="Вы успешно прошли тестирование")
+                                        text="Вы успешно прошли тестирование", reply_markup=go_on_button)
         else:
             await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                         text="К сожалению Вы не прошли тестирование. Вы можете в любое время"
@@ -100,3 +101,7 @@ async def check_answer(call: CallbackQuery, state: FSMContext, callback_data: di
                                     reply_markup=create_quiz_keyboard(options))
 
 
+@dp.callback_query_handler(text="go_on")
+async def on_go_on_clicked(call: CallbackQuery):
+    await call.answer()
+    await bot.send_message(chat_id=call.message.chat.id, text="Текст", reply_markup=fill_in_button)

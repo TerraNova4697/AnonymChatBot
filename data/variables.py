@@ -3,6 +3,7 @@ admins = []
 
 test = dict()
 new_options = dict()
+f_questions = dict()  # {'key': [(option1,), (option2,), (option3,), (option4,)]}
 
 test2 = {
     "Американец подрабатывал клоуном на детских праздниках, а в свободное время вступал в сексуальные связи с юношами "

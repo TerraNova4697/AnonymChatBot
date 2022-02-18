@@ -75,6 +75,21 @@ class Database:
         """
         self.execute(sql, commit=True)
 
+    def create_table_users_filled_forms(self):
+        sql = """
+        CREATE TABLE UsersFilledForms (
+        record_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        user_id int NOT NULL,
+        f_question_id int NOT NULL,
+        f_question_text varchar NOT NULL,
+        f_answer_id int NOT NULL,
+        is_important varchar(255) NOT NULL,
+        partners_value varchar NOT NULL,
+        CONSTRAINT unique_ids UNIQUE (f_question_id, user_id)
+        );
+        """
+        self.execute(sql, commit=True)
+
     def create_table_user(self):
         sql = """
         CREATE TABLE Users (
@@ -207,6 +222,10 @@ class Database:
         sql, parameters = self.format_args(sql, kwargs)
         return self.execute(sql, parameters=parameters, fetchone=True)
 
+    def select_all_active_forms_questions(self):
+        sql = "SELECT f_questions_id, text FROM FormsQuestions WHERE status='Active'"
+        return self.execute(sql, fetchall=True)
+
     def select_all_forms_questions(self):
         sql = "SELECT * FROM FormsQuestions"
         return self.execute(sql, fetchall=True)
@@ -228,13 +247,58 @@ class Database:
 
     # FormsAnswers operations
     def select_all_f_answers(self, **kwargs):
-        sql = "SELECT text FROM FormsAnswers WHERE "
+        sql = "SELECT text, answer_id FROM FormsAnswers WHERE "
         sql, parameters = self.format_args(sql, kwargs)
         return self.execute(sql, parameters=parameters, fetchall=True)
+
+    def select_f_answer(self, **kwargs):
+        sql = "SELECT text, form_question_id, answer_id FROM FormsAnswers WHERE "
+        sql, parameters = self.format_args(sql, kwargs)
+        return self.execute(sql, parameters=parameters, fetchone=True)
 
     def insert_new_form_answer(self, form_question_id: int, text: str):
         sql = "INSERT INTO FormsAnswers(form_question_id, text) VALUES (?, ?)"
         self.execute(sql, parameters=(form_question_id, text), commit=True)
+
+    # UsersFormsAnswers operations
+    def insert_users_filled_forms(self, user_id: int, f_question_id,
+                                  f_question_text, f_answer_id, is_important="False", partners_value=''):
+        sql = "INSERT INTO UsersFilledForms(user_id, f_question_id, f_question_text, f_answer_id, is_important, " \
+              "partners_value)" \
+              " VALUES (?, ?, ?, ?, ?, ?)"
+        self.execute(sql, parameters=(user_id, f_question_id, f_question_text, f_answer_id, is_important,
+                                      partners_value), commit=True)
+
+    def select_all_users_filled_forms(self, **kwargs):
+        sql = "SELECT * FROM UsersFilledForms WHERE "
+        sql, parameters = self.format_args(sql, kwargs)
+        return self.execute(sql, parameters=parameters, fetchall=True)
+
+    def select_users_filled_form(self, **kwargs):
+        sql = "SELECT * FROM UsersFilledForms WHERE "
+        sql, parameters = self.format_args(sql, kwargs)
+        return self.execute(sql, parameters=parameters, fetchone=True)
+
+    def users_filled_forms_set_importance(self, record_id, is_important):
+        sql = "UPDATE UsersFilledForms SET is_important=? WHERE record_id=?"
+        self.execute(sql, parameters=(is_important, record_id), commit=True)
+
+    def users_filled_forms_update_partners_value(self, record_id, partners_value):
+        sql = "UPDATE UsersFilledForms SET partners_value=? WHERE record_id=?"
+        self.execute(sql, parameters=(partners_value, record_id), commit=True)
+
+    def drop_table(self):
+        sql = "DROP TABLE UsersFilledForms"
+        self.execute(sql, commit=True)
+
+    def delete_filled_forms(self):
+        sql = "DELETE FROM UsersFilledForms WHERE TRUE"
+        self.execute(sql, commit=True)
+
+    def count_all_important_f_questions(self, **kwargs):
+        sql = "SELECT COUNT(*) FROM UsersFilledForms WHERE "
+        sql, parameters = self.format_args(sql, kwargs)
+        return self.execute(sql, parameters=parameters, fetchall=True)
 
     # Users table operations
     def add_user(self, user_id: int, status: str = "Inactive"):
@@ -244,6 +308,18 @@ class Database:
     def activate_user(self, user_id: int, status: str):
         sql = "UPDATE Users SET status=? WHERE user_id=?"
         self.execute(sql, parameters=(status, user_id), commit=True)
+
+    def update_username(self, user_id: int, name: str):
+        sql = "UPDATE Users SET name=? WHERE user_id=?"
+        self.execute(sql, parameters=(name, user_id), commit=True)
+
+    def select_all_users(self):
+        sql = "SELECT * FROM Users"
+        return self.execute(sql, fetchall=True)
+
+    def delete_users(self):
+        sql = "DELETE FROM Users WHERE TRUE"
+        self.execute(sql, commit=True)
 
     # TestQuestions table operations
     def add_question_into_test_questions(self, question_text: str, is_active="False"):

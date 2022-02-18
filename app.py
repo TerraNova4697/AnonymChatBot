@@ -50,6 +50,12 @@ async def on_startup(dispatcher):
     # populate test with questions and answers
     # db.populate_test_with_answers()
 
+    try:
+        # db.drop_table()
+        db.create_table_users_filled_forms()
+    except Exception as err:
+        print(err)
+
     # Загружаем списки администраторов
     list_of_managers = db.select_all_admins_user_id(status="Active")
     for user_id in list_of_managers:
@@ -59,6 +65,13 @@ async def on_startup(dispatcher):
     for question in list_of_test_questions:
         list_of_answers = db.select_test_answers(question_id=question[0])
         variables.test[question[1]] = list_of_answers
+
+    # Загружаем анкету
+    list_of_forms_questions = db.select_all_active_forms_questions()
+    for f_question in list_of_forms_questions:
+        list_of_f_answers = db.select_all_f_answers(form_question_id=f_question[0])
+        variables.f_questions[f_question[1]] = list_of_f_answers
+
 
     # Уведомляет про запуск
     await on_startup_notify(dispatcher)
