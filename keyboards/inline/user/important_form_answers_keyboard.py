@@ -5,6 +5,7 @@ from keyboards.inline.user.callback_datas import forms_importance_callback, impo
 
 
 def create_important_form_answers_keyboard(filled_form):
+
     keyboard = InlineKeyboardMarkup(row_width=5)
     text = ''
     text += "\n".join([
@@ -22,10 +23,11 @@ def create_important_form_answers_keyboard(filled_form):
 
 
 def create_set_value_for_f_questions_keyboard(questions):
+    print(questions[0])
     keyboard = InlineKeyboardMarkup(row_width=5)
     text = ''
     text += "\n".join([
-        f"{num + 1}. {question[3]}" for num, question in enumerate(questions)
+        f"{num + 1}. {question[3]}\nТекущее значение: {question[6]}\n" for num, question in enumerate(questions)
     ])
     for num, question in enumerate(questions):
         keyboard.insert(InlineKeyboardButton(text=str(num + 1), callback_data=important_f_questions_callback

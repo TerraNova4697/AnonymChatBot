@@ -82,7 +82,7 @@ class Database:
         user_id int NOT NULL,
         f_question_id int NOT NULL,
         f_question_text varchar NOT NULL,
-        f_answer_id int NOT NULL,
+        f_answer_id int,
         is_important varchar(255) NOT NULL,
         partners_value varchar NOT NULL,
         CONSTRAINT unique_ids UNIQUE (f_question_id, user_id)
@@ -261,6 +261,14 @@ class Database:
         self.execute(sql, parameters=(form_question_id, text), commit=True)
 
     # UsersFormsAnswers operations
+    def insert_users_forms_answers_before_test(self, user_id: int, f_question_id,
+                                               f_question_text, is_important="False", partners_value=''):
+        sql = "INSERT INTO UsersFilledForms(user_id, f_question_id, f_question_text, is_important, " \
+              "partners_value)" \
+              " VALUES (?, ?, ?, ?, ?)"
+        self.execute(sql, parameters=(user_id, f_question_id, f_question_text, is_important,
+                                      partners_value), commit=True)
+
     def insert_users_filled_forms(self, user_id: int, f_question_id,
                                   f_question_text, f_answer_id, is_important="False", partners_value=''):
         sql = "INSERT INTO UsersFilledForms(user_id, f_question_id, f_question_text, f_answer_id, is_important, " \
@@ -268,6 +276,8 @@ class Database:
               " VALUES (?, ?, ?, ?, ?, ?)"
         self.execute(sql, parameters=(user_id, f_question_id, f_question_text, f_answer_id, is_important,
                                       partners_value), commit=True)
+
+
 
     def select_all_users_filled_forms(self, **kwargs):
         sql = "SELECT * FROM UsersFilledForms WHERE "

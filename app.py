@@ -29,6 +29,7 @@ async def on_startup(dispatcher):
         print(err)
 
     try:
+        db.drop_table()
         db.create_table_form_questions()
     except Exception as err:
         print(err)
