@@ -27,7 +27,7 @@ def create_set_value_for_f_questions_keyboard(questions):
     keyboard = InlineKeyboardMarkup(row_width=5)
     text = ''
     text += "\n".join([
-        f"{num + 1}. {question[3]}\nТекущее значение: {question[6]}\n" for num, question in enumerate(questions)
+        f"{num + 1}. {question[3]}\nТекущее значение: {question[7]}\n" for num, question in enumerate(questions)
     ])
     for num, question in enumerate(questions):
         keyboard.insert(InlineKeyboardButton(text=str(num + 1), callback_data=important_f_questions_callback

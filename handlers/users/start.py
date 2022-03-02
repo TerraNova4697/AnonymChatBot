@@ -184,7 +184,8 @@ async def on_save_value_clicked(call: CallbackQuery, state: FSMContext, callback
     print(f_answer_id)
     f_answer = db.select_f_answer(answer_id=int(f_answer_id))
     print(f_answer)
-    db.users_filled_forms_update_partners_value(record_id=int(record_id), partners_value=f_answer[0])
+    db.users_filled_forms_update_partners_value(record_id=int(record_id), partners_value=f_answer[2],
+                                                partners_text_value=f_answer[0])
     questions = db.select_all_users_filled_forms(is_important="True", user_id=int(call.message.chat.id))
     text_begin = "Вы выбрали приоритетными следующие критерии: \n\n"
     text, keyboard = create_set_value_for_f_questions_keyboard(questions)

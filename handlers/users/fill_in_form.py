@@ -63,10 +63,9 @@ async def on_forms_answer_clicked(call: CallbackQuery, state: FSMContext, callba
     f_question_text = db.select_f_question_form(f_questions_id=int(f_answer[1]))
 
     try:
-        db.insert_users_filled_forms(user_id=int(call.message.chat.id),
-                                     f_question_text=f_question_text[1],
-                                     f_question_id=f_answer[1],
-                                     f_answer_id=int(f_answer[2]))
+        db.update_users_filled_forms_with_answer(user_id=int(call.message.chat.id),
+                                                 f_question_id=f_answer[1],
+                                                 f_answer_id=int(f_answer_id))
 
     except Exception as err:
         print(err)

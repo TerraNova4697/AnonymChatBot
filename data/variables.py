@@ -4,6 +4,7 @@ admins = []
 test = dict()
 new_options = dict()
 f_questions = dict()  # {'key': [(option1,), (option2,), (option3,), (option4,)]}
+users_search_queue = list()  # [user1, user2, user3, ...]
 
 test2 = {
     "Американец подрабатывал клоуном на детских праздниках, а в свободное время вступал в сексуальные связи с юношами "

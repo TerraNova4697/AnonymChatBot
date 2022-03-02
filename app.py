@@ -1,9 +1,12 @@
 from aiogram import executor
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from data import variables
 from data.variables import admins
-from loader import dp, db
+from loader import dp, db, bot
 import middlewares, filters, handlers
+from utils.misc.partner_search.find_partners import find_partner
+from utils.misc.user import User
 from utils.notify_admins import on_startup_notify
 from utils.set_bot_commands import set_default_commands
 
@@ -19,6 +22,7 @@ async def on_startup(dispatcher):
         print(err)
 
     try:
+        # db.drop_table_users()
         db.create_table_user()
     except Exception as err:
         print(err)
@@ -29,7 +33,7 @@ async def on_startup(dispatcher):
         print(err)
 
     try:
-        db.drop_table()
+        # db.drop_table()
         db.create_table_form_questions()
     except Exception as err:
         print(err)
@@ -73,6 +77,17 @@ async def on_startup(dispatcher):
         list_of_f_answers = db.select_all_f_answers(form_question_id=f_question[0])
         variables.f_questions[f_question[1]] = list_of_f_answers
 
+    users_in_search = db.select_all_users_in_search(status="InSearch")
+    for user in users_in_search:
+        new_user_to_queue = User()
+        new_user_to_queue.user_id = user[0]
+        new_user_to_queue.name = user[1]
+        new_user_to_queue.status = user[2]
+        variables.users_search_queue.append(new_user_to_queue)
+
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(find_partner, "interval", seconds=300, args=(bot, ))
+    scheduler.start()
 
     # Уведомляет про запуск
     await on_startup_notify(dispatcher)
