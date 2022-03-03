@@ -7,7 +7,7 @@ from utils.misc.user import User
 
 @dp.callback_query_handler(text="begin_search")
 async def add_user_to_search_queue(call: CallbackQuery):
-    await bot.edit_message_text(text="Мы подбираем для Вас человека. Это может занять некоторое вреся, "
+    await bot.edit_message_text(text="Мы подбираем для Вас человека. Это может занять некоторое время, "
                                      "Вам придет уведомление, когда мы найдем.",
                                 message_id=call.message.message_id, chat_id=call.message.chat.id)
     db.update_users_status_in_search(status="InSearch", user_id=call.message.chat.id)

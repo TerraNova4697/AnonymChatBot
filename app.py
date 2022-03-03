@@ -83,6 +83,7 @@ async def on_startup(dispatcher):
         new_user_to_queue.user_id = user[0]
         new_user_to_queue.name = user[1]
         new_user_to_queue.status = user[2]
+        new_user_to_queue.partner_id = user[3]
         variables.users_search_queue.append(new_user_to_queue)
 
     scheduler = AsyncIOScheduler()
