@@ -61,6 +61,12 @@ async def on_startup(dispatcher):
     except Exception as err:
         print(err)
 
+    try:
+        # db.drop_table_chats()
+        db.create_table_chats()
+    except Exception as err:
+        print(err)
+
     # Загружаем списки администраторов
     list_of_managers = db.select_all_admins_user_id(status="Active")
     for user_id in list_of_managers:
@@ -77,7 +83,8 @@ async def on_startup(dispatcher):
         list_of_f_answers = db.select_all_f_answers(form_question_id=f_question[0])
         variables.f_questions[f_question[1]] = list_of_f_answers
 
-    users_in_search = db.select_all_users_in_search(status="InSearch")
+    # users_in_search = db.select_all_users_in_search()
+    users_in_search = db.select_all_users()
     for user in users_in_search:
         new_user_to_queue = User()
         new_user_to_queue.user_id = user[0]

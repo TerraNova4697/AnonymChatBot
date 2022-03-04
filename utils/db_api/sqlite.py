@@ -133,6 +133,21 @@ class Database:
         """
         self.execute(sql, commit=True)
 
+    def create_table_chats(self):
+        sql = """
+        CREATE TABLE Chats (
+        chat_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        partner1_id int NOT NULL,
+        partner2_id int NOT NULL,
+        openness varchar(255),
+        status varchar(255),
+        exchange_contacts varchar (255),
+        partner1_phone_number varchar(255),
+        partner2_phone_number varchar(255)
+        );
+        """
+        self.execute(sql, commit=True)
+
     # STRINGS FORMATTING
     @staticmethod
     def format_args(sql, parameters: dict):
@@ -438,6 +453,28 @@ class Database:
     def update_options_text(self, answer_id: int, answer_text: str):
         sql = "UPDATE TestAnswers SET answer_text=? WHERE answer_id=?"
         self.execute(sql, parameters=(answer_text, answer_id), commit=True)
+
+    # Chats table operations
+    def add_new_chat(self, partner1_id: int, partner2_id: int, openness: str = "", status: str = "OpennessLevel",
+                     exchange_contacts: str = "False"):
+        sql = "INSERT INTO Chats(partner1_id, partner2_id, openness, status, exchange_contacts) VALUES (?, ?, ?, ?, ?)"
+        self.execute(sql, parameters=(partner1_id, partner2_id, openness, status, exchange_contacts), commit=True)
+
+    def select_chat_by_partner_id(self, partner1_id: int, partner2_id: int):
+        sql = f"SELECT * FROM Chats WHERE partner1_id=? OR partner2_id=?"
+        return self.execute(sql, parameters=(partner1_id, partner2_id), fetchone=True)
+
+    def update_chat_openness(self, openness: str, chat_id: int):
+        sql = "UPDATE Chats SET openness=? WHERE chat_id=?"
+        self.execute(sql, parameters=(openness, chat_id), commit=True)
+
+    def update_chat_status(self, status: str, chat_id: int):
+        sql = "UPDATE Chats SET status=? WHERE chat_id=?"
+        self.execute(sql, parameters=(status, chat_id), commit=True)
+
+    def drop_table_chats(self):
+        sql = "DROP TABLE Chats"
+        self.execute(sql, commit=True)
 
 
 def logger(statement):
