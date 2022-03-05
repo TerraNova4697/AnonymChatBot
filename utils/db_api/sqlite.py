@@ -302,8 +302,6 @@ class Database:
         self.execute(sql, parameters=(user_id, f_question_id, f_question_text, f_answer_id, is_important,
                                       partners_value), commit=True)
 
-
-
     def select_all_users_filled_forms(self, **kwargs):
         sql = "SELECT * FROM UsersFilledForms WHERE "
         sql, parameters = self.format_args(sql, kwargs)
@@ -456,9 +454,12 @@ class Database:
 
     # Chats table operations
     def add_new_chat(self, partner1_id: int, partner2_id: int, openness: str = "", status: str = "OpennessLevel",
-                     exchange_contacts: str = "False"):
-        sql = "INSERT INTO Chats(partner1_id, partner2_id, openness, status, exchange_contacts) VALUES (?, ?, ?, ?, ?)"
-        self.execute(sql, parameters=(partner1_id, partner2_id, openness, status, exchange_contacts), commit=True)
+                     exchange_contacts: str = "False", partner1_phone_number: str = "",
+                     partner2_phone_number: str = ""):
+        sql = "INSERT INTO Chats(partner1_id, partner2_id, openness, status, exchange_contacts, partner1_phone_number, " \
+              "partner2_phone_number) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        self.execute(sql, parameters=(partner1_id, partner2_id, openness, status, exchange_contacts,
+                                      partner1_phone_number, partner2_phone_number), commit=True)
 
     def select_chat_by_partner_id(self, partner1_id: int, partner2_id: int):
         sql = f"SELECT * FROM Chats WHERE partner1_id=? OR partner2_id=?"
@@ -475,6 +476,14 @@ class Database:
     def drop_table_chats(self):
         sql = "DROP TABLE Chats"
         self.execute(sql, commit=True)
+
+    def update_chat_exchange_contacts_partner1(self, exchange_contacts: str, partner1_phone_number: str, chat_id: int):
+        sql = "UPDATE Chats SET exchange_contacts=?, partner1_phone_number=? WHERE chat_id=?"
+        self.execute(sql, parameters=(exchange_contacts, partner1_phone_number, chat_id), commit=True)
+
+    def update_chat_exchange_contacts_partner2(self, exchange_contacts: str, partner2_phone_number: str, chat_id: int):
+        sql = "UPDATE Chats SET exchange_contacts=?, partner2_phone_number=? WHERE chat_id=?"
+        self.execute(sql, parameters=(exchange_contacts, partner2_phone_number, chat_id), commit=True)
 
 
 def logger(statement):

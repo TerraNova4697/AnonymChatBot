@@ -48,7 +48,7 @@ async def on_startup(dispatcher):
 
     # Create tables for test
     try:
-        db.create_table_test_questions()
+        # db.create_table_test_questions()
         db.create_table_test_variants()
     except Exception as err:
         print(err)
@@ -86,6 +86,7 @@ async def on_startup(dispatcher):
     # users_in_search = db.select_all_users_in_search()
     users_in_search = db.select_all_users()
     for user in users_in_search:
+        print(user)
         new_user_to_queue = User()
         new_user_to_queue.user_id = user[0]
         new_user_to_queue.name = user[1]
@@ -94,7 +95,7 @@ async def on_startup(dispatcher):
         variables.users_search_queue.append(new_user_to_queue)
 
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(find_partner, "interval", seconds=300, args=(bot, ))
+    scheduler.add_job(find_partner, "interval", seconds=30, args=(bot, ))
     scheduler.start()
 
     # Уведомляет про запуск

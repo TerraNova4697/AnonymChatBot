@@ -42,6 +42,7 @@ async def on_accept_partner_clicked(call: CallbackQuery):
     for user in variables.users_search_queue:
         if user.user_id == int(call.message.chat.id):
             user.status = "AcceptedPartner"
+            db.update_users_status_in_search(status="AcceptedPartner", user_id=int(call.message.chat.id))
             print(user.status)
             for partner in variables.users_search_queue:
                 print(f"partner.status = {partner.status}")
