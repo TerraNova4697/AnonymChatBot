@@ -7,3 +7,4 @@ class FillInForms(StatesGroup):
     ChooseImportant = State()
     WriteToDB = State()
     ChoosePartnersValue = State()
+    Update = State()

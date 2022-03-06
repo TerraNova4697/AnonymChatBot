@@ -2,6 +2,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery
 
+from data import variables
 from filters import IsOwnerCall, IsAdminCall, IsOwner, IsAdmin
 from keyboards.inline.admin.admin_callback_datas import choose_openness_callback, edit_category_keyboard
 from keyboards.inline.admin.choose_opennes_keyboard import choose_openness_keyboard
@@ -112,6 +113,17 @@ async def add_question_no_category(call: CallbackQuery, state: FSMContext, callb
     openness = data.get("openness")
     category = callback_data.get("category")
     db.add_question(question=question, category=category, openness=openness)
+    new_question = db.select_question(question=question, category=category, openness=openness)
+    if question[3] == "Формальный":
+        variables.formal_questions.append(new_question)
+    elif question[3] == "Приятельский":
+        variables.fellowish_questions.append(new_question)
+    elif question[3] == "Дружеский":
+        variables.friendly_questions.append(new_question)
+    elif question[3] == "Близость":
+        variables.close_friend_questions.append(new_question)
+    elif question[3] == "Исповедь":
+        variables.confession_questions.append(new_question)
     questions = db.select_all_questions()
     text_begin = "Вы добавили новый вопрос. \n\nНа данный момент имеются следующие вопросы: \n\n"
     list_of_questions = ''

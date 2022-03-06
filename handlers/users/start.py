@@ -7,7 +7,7 @@ from data import variables
 from keyboards.inline.user.callback_datas import quiz_callback, forms_importance_callback, \
     important_f_questions_callback, set_value_callback
 from keyboards.inline.user.continue_button import continue_button, accept_button, try_again_button, go_on_button, \
-    fill_in_button, begin_search
+    fill_in_button
 from keyboards.inline.user.important_form_answers_keyboard import create_important_form_answers_keyboard, \
     create_set_value_for_f_questions_keyboard, create_keyboard_to_set_value
 from keyboards.inline.user.quiz_keyboard import create_quiz_keyboard
@@ -18,12 +18,36 @@ from states.quiz import QuizState
 
 @dp.message_handler(CommandStart())
 async def bot_start(message: types.Message):
-    await bot.send_message(text=f"Привет, {message.from_user.full_name}!", chat_id=message.chat.id,
-                           reply_markup=continue_button)
-    try:
-        db.add_user(int(message.chat.id))
-    except Exception as err:
-        print(err)
+    user = db.select_user_by_id(user_id=int(message.chat.id))
+    print(user)
+    if user is None:
+        await bot.send_message(text=f"Привет, {message.from_user.full_name}!", chat_id=message.chat.id,
+                               reply_markup=continue_button)
+        try:
+            db.add_user(int(message.chat.id))
+        except Exception as err:
+            print(err)
+    else:
+        if user[2] == "Inactive":
+            await bot.send_message(chat_id=message.chat.id, text="Текст для ознакомления",
+                                   reply_markup=accept_button)
+        elif user[2] == "Active":
+            await bot.send_message(chat_id=message.chat.id,
+                                   text="Вы успешно прошли тестирование", reply_markup=go_on_button)
+        elif user[2] == "InSearch":
+            await bot.send_message(chat_id=message.chat.id,
+                                   text="Мы находимся в поиске собеседника для Вас. "
+                                        "Если Вы хотите перезаполнить анкету, воспользуйтесь командой /update\n"
+                                        "А также обновить критерии для поиска собеседника с помощью /priority")
+        elif user[2] == "FoundPartner":
+            await bot.send_message(chat_id=message.chat.id,
+                                   text="Мы нашли для Вас собеседника, ждем ответа от него. Если Вы больше не хотите ждать, "
+                                        "можете найти нового собеседника с помощью команды /search")
+        elif user[2] == "AcceptedPartner":
+            await bot.send_message(chat_id=message.chat.id,
+                                   text="Если Вы хотите перезаполнить анкету, воспользуйтесь командой /update\n"
+                                        "А также обновить критерии для поиска собеседника с помощью /priority\n"
+                                        "Найти нового собеседника вы можете командой /search")
 
 
 @dp.callback_query_handler(text="continue")
@@ -45,7 +69,7 @@ async def start_test(call: CallbackQuery, state: FSMContext):
     options = questions.get(question)
     question += '\n\n'
     question += '\n'.join([
-        f'{str(num+1)}. {option[0]}' for num, option in enumerate(options)
+        f'{str(num + 1)}. {option[0]}' for num, option in enumerate(options)
     ])
     await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=question,
                                 reply_markup=create_quiz_keyboard(options))
@@ -83,7 +107,7 @@ async def check_answer(call: CallbackQuery, state: FSMContext, callback_data: di
         data = await state.get_data()
         points = data.get("points")
         num_of_questions = data.get('num_of_questions')
-        if points >= num_of_questions-1:
+        if points >= num_of_questions - 1:
             db.activate_user(user_id=int(call.message.chat.id), status="Active")
             await bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                                         text="Вы успешно прошли тестирование", reply_markup=go_on_button)
@@ -154,7 +178,7 @@ async def on_important_done_clicked(call: CallbackQuery, state: FSMContext):
         text_begin = "Вы выбрали приоритетными следующие критерии: \n\n"
         text, keyboard = create_set_value_for_f_questions_keyboard(questions)
         text_end = "\n\nТеперь выберите значение критериев."
-        await bot.edit_message_text(text=text_begin+text+text_end, chat_id=call.message.chat.id,
+        await bot.edit_message_text(text=text_begin + text + text_end, chat_id=call.message.chat.id,
                                     message_id=call.message.message_id, reply_markup=keyboard)
         await FillInForms.ChoosePartnersValue.set()
 
@@ -170,7 +194,8 @@ async def on_set_value_clicked(call: CallbackQuery, state: FSMContext, callback_
     text_begin = f"Выберите значение\n\n{f_questions[1]}\n\n"
     f_answers = db.select_all_f_answers(form_question_id=int(f_questions_id))
     text, keyboard = create_keyboard_to_set_value(f_answers)
-    await bot.edit_message_text(text=text_begin+text, chat_id=call.message.chat.id, message_id=call.message.message_id,
+    await bot.edit_message_text(text=text_begin + text, chat_id=call.message.chat.id,
+                                message_id=call.message.message_id,
                                 reply_markup=keyboard)
 
 
@@ -213,11 +238,15 @@ async def on_answers_done_clicked(call: CallbackQuery, state: FSMContext):
             await call.answer(text="Необходимо дать значение на все вопросы", show_alert=True)
         else:
             await state.finish()
-            text = "Отлично! Мы уже нашли подходящего собеседника. Чтобы с ним связаться и понять насколько Вы " \
-                   "подходите ему заполните информацию о себе."
-            await bot.edit_message_text(text=text, chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                        reply_markup=fill_in_button)
-
+            user = db.select_user_by_id(user_id=int(call.message.chat.id))
+            if user[2] != "Active":
+                text = "Отлично! Мы обновили приоритетные значения."
+                await bot.edit_message_text(text=text, chat_id=call.message.chat.id, message_id=call.message.message_id)
+            else:
+                text = "Отлично! Мы уже нашли подходящего собеседника. Чтобы с ним связаться и понять насколько Вы " \
+                       "подходите ему заполните информацию о себе."
+                await bot.edit_message_text(text=text, chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                            reply_markup=fill_in_button)
 
 # @dp.callback_query_handler(text="go_on")
 # async def on_go_on_clicked(call: CallbackQuery):

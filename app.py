@@ -45,6 +45,18 @@ async def on_startup(dispatcher):
         print(err)
 
     # db.populate_questions()
+    list_of_questions = db.select_all_questions()
+    for question in list_of_questions:
+        if question[3] == "Формальный":
+            variables.formal_questions.append(question)
+        elif question[3] == "Приятельский":
+            variables.fellowish_questions.append(question)
+        elif question[3] == "Дружеский":
+            variables.friendly_questions.append(question)
+        elif question[3] == "Близость":
+            variables.close_friend_questions.append(question)
+        elif question[3] == "Исповедь":
+            variables.confession_questions.append(question)
 
     # Create tables for test
     try:

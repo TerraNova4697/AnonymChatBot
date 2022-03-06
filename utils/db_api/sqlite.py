@@ -143,7 +143,12 @@ class Database:
         status varchar(255),
         exchange_contacts varchar (255),
         partner1_phone_number varchar(255),
-        partner2_phone_number varchar(255)
+        partner2_phone_number varchar(255),
+        answered_questions varchar(255),
+        partner1_passed int NOT NULL,
+        partner2_passed int NOT NULL,
+        partner1_ready_to_lvl_up varchar(255),
+        partner2_ready_to_lvl_up varchar(255)
         );
         """
         self.execute(sql, commit=True)
@@ -455,11 +460,17 @@ class Database:
     # Chats table operations
     def add_new_chat(self, partner1_id: int, partner2_id: int, openness: str = "", status: str = "OpennessLevel",
                      exchange_contacts: str = "False", partner1_phone_number: str = "",
-                     partner2_phone_number: str = ""):
+                     partner2_phone_number: str = "", answered_questions: str = "", partner1_passed: int = 0,
+                     partner2_passed: int = 0, partner1_ready_to_lvl_up: str = "False",
+                     partner2_ready_to_lvl_up: str = "False"):
         sql = "INSERT INTO Chats(partner1_id, partner2_id, openness, status, exchange_contacts, partner1_phone_number, " \
-              "partner2_phone_number) VALUES (?, ?, ?, ?, ?, ?, ?)"
+              "partner2_phone_number, answered_questions, partner1_passed, partner2_passed, partner1_ready_to_lvl_up, " \
+              "partner2_ready_to_lvl_up) " \
+              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         self.execute(sql, parameters=(partner1_id, partner2_id, openness, status, exchange_contacts,
-                                      partner1_phone_number, partner2_phone_number), commit=True)
+                                      partner1_phone_number, partner2_phone_number, answered_questions,
+                                      partner1_passed, partner2_passed, partner1_ready_to_lvl_up,
+                                      partner2_ready_to_lvl_up), commit=True)
 
     def select_chat_by_partner_id(self, partner1_id: int, partner2_id: int):
         sql = f"SELECT * FROM Chats WHERE partner1_id=? OR partner2_id=?"
@@ -484,6 +495,41 @@ class Database:
     def update_chat_exchange_contacts_partner2(self, exchange_contacts: str, partner2_phone_number: str, chat_id: int):
         sql = "UPDATE Chats SET exchange_contacts=?, partner2_phone_number=? WHERE chat_id=?"
         self.execute(sql, parameters=(exchange_contacts, partner2_phone_number, chat_id), commit=True)
+
+    def update_chats_answered_questions(self, answered_questions, chat_id):
+        sql = "UPDATE Chats SET answered_questions=? WHERE chat_id=?"
+        self.execute(sql, parameters=(answered_questions, chat_id), commit=True)
+
+    def update_partner1_passed_questions(self, partner1_passed, chat_id):
+        sql = "UPDATE Chats SET partner1_passed=? WHERE chat_id=?"
+        self.execute(sql, parameters=(partner1_passed, chat_id), commit=True)
+
+    def update_partner2_passed_questions(self, partner2_passed, chat_id):
+        sql = "UPDATE Chats SET partner2_passed=? WHERE chat_id=?"
+        self.execute(sql, parameters=(partner2_passed, chat_id), commit=True)
+
+    def update_partner1_and_2_passed_questions(self, partner1_passed, partner2_passed, chat_id):
+        sql = "UPDATE Chats SET partner1_passed=?, partner2_passed=? WHERE chat_id=?"
+        self.execute(sql, parameters=(partner1_passed, partner2_passed, chat_id), commit=True)
+
+    def update_chat_partner1_ready_to_lvl_up(self, partner1_ready_to_lvl_up, chat_id):
+        sql = "UPDATE Chats SET partner1_ready_to_lvl_up=? WHERE chat_id=?"
+        self.execute(sql, parameters=(partner1_ready_to_lvl_up, chat_id), commit=True)
+
+    def update_chat_partner2_ready_to_lvl_up(self, partner2_ready_to_lvl_up, chat_id):
+        sql = "UPDATE Chats SET partner2_ready_to_lvl_up=? WHERE chat_id=?"
+        self.execute(sql, parameters=(partner2_ready_to_lvl_up, chat_id), commit=True)
+
+    def update_chat_openness_and_readiness(self, openness, partner1_ready_to_lvl_up, partner2_ready_to_lvl_up,
+                                           partner1_passed, partner2_passed, chat_id):
+        sql = "UPDATE Chats SET openness=?, partner1_ready_to_lvl_up=?, partner2_ready_to_lvl_up=?, partner1_passed=?," \
+              "partner2_passed=? WHERE chat_id=?"
+        self.execute(sql, parameters=(openness, partner1_ready_to_lvl_up, partner2_ready_to_lvl_up,
+                                      partner1_passed, partner2_passed, chat_id), commit=True)
+
+    def delete_chat_by_partner_id(self, partner1_id, partner2_id):
+        sql = "DELETE FROM Chats WHERE partner1_id=? OR partner2_id=?"
+        self.execute(sql, parameters=(partner1_id, partner2_id), commit=True)
 
 
 def logger(statement):

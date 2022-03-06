@@ -5,6 +5,11 @@ test = dict()
 new_options = dict()
 f_questions = dict()  # {'key': [(option1,), (option2,), (option3,), (option4,)]}
 users_search_queue = list()  # [user1, user2, user3, ...]
+formal_questions = list()
+fellowish_questions = list()
+friendly_questions = list()
+close_friend_questions = list()
+confession_questions = list()
 
 openness_levels = {'Формальный': 1, "Приятельский": 2, "Дружеский": 3, "Близость": 4, "Исповедь": 5}
 

@@ -189,10 +189,16 @@ async def on_search_partner_clicked(call: CallbackQuery):
                 await bot.edit_message_text(text="Мы подбираем для Вас человека. Это может занять некоторое время, "
                                                  "Вам придет уведомление, когда мы найдем.",
                                             message_id=call.message.message_id, chat_id=call.message.chat.id)
-                db.update_users_status_and_partner_id(status="InSearch", partner_id=0, user_id=call.message.chat.id)
+                db.update_users_status_and_partner_id(status="InSearch", partner_id=0, user_id=int(call.message.chat.id))
+                await bot.send_message(
+                    text="Ваш собеседник покинул чат. Мы подбираем для Вас человека. Это может занять некоторое время, "
+                         "Вам придет уведомление, когда мы найдем.", chat_id=user.partner_id)
+                db.update_users_status_and_partner_id(status="InSearch", partner_id=0, user_id=user.partner_id)
+                for partner in variables.users_search_queue:
+                    if partner.user_id == user.partner_id:
+                        partner.status = "InSearch"
+                        partner.denied_partners.append(partner.partner_id)
+                        partner.partner_id = 0
                 user.status = "InSearch"
                 user.denied_partners.append(user.partner_id)
                 user.partner_id = 0
-
-
-
