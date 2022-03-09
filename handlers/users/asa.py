@@ -19,7 +19,3 @@ async def del_users(message: types.Message):
 
     await bot.send_message(chat_id=message.chat.id, text=str(users))
 
-
-@dp.message_handler(Command('delete_queue'))
-async def del_queue(message: types.Message):
-    db.delete
