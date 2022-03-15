@@ -25,7 +25,7 @@ async def on_command_update(message: types.Message, state: FSMContext):
         if user[2] == "Inactive":
             await bot.send_message(chat_id=message.chat.id, text="Текст для ознакомления",
                                    reply_markup=accept_button)
-        else:
+        elif user[2] != "Active":
             await FillInForms.Update.set()
             await state.update_data({"f_questions": variables.f_questions})
             data = await state.get_data()

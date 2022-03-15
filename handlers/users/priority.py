@@ -10,7 +10,7 @@ from states.fill_in_form import FillInForms
 async def on_priority_clicked(message: types.Message):
     user = db.select_user_by_id(user_id=int(message.chat.id))
     print(user)
-    if user[2] != "Inactive":
+    if user[2] == "FoundPartner" or user[2] == "AcceptedPartner" or user[2] == "InSearch":
         text_begin = "Теперь выберите 3 важные критерия для Вас при поиске " \
                      "собеседника, кликнув на них по очереди.\n\n" \
                      "Если Вы хотите убрать какой-то критерий, кликните на него еще раз\n\n"
