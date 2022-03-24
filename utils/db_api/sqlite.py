@@ -377,6 +377,14 @@ class Database:
         sql = "DELETE FROM Users WHERE TRUE"
         self.execute(sql, commit=True)
 
+    def delete_user(self, user_id):
+        sql = f"DELETE FROM Users WHERE user_id={user_id}"
+        self.execute(sql, commit=True)
+
+    def upd(self, user_id):
+        sql = f"UPDATE Users SET status=InSearch WHERE user_id={user_id}"
+        self.execute(sql, commit=True)
+
     def drop_table_users(self):
         sql = "DROP TABLE Users"
         self.execute(sql, commit=True)

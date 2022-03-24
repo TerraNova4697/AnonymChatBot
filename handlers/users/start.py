@@ -86,7 +86,6 @@ async def cancel_quiz(call: CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(quiz_callback.filter(action="quiz_answer"), state=QuizState.Quiz)
 async def check_answer(call: CallbackQuery, state: FSMContext, callback_data: dict):
-    # TODO: Удалять сообщение
     await call.answer()
     answer = callback_data.get("is_true")
 

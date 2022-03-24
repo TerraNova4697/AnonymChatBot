@@ -1,6 +1,3 @@
-
-# TODO: Сделать динамически создающуюся клавиатуру с кнопками с именами администраторов для удаления,
-#  кнопкой добавления администратора, кнопкой назад
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from keyboards.inline.owner.owner_callback_datas import choose_admin_callback

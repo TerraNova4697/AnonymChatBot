@@ -35,7 +35,6 @@ async def on_question_input(message: types.Message, state: FSMContext):
     db.add_question_into_test_questions(question_text=message.text)
     question_id = db.select_test_question_id(question_text=message.text)
     await state.update_data({"new_test_question_id": question_id[0]})
-    # TODO: Добавить варианты ответа
     options = db.select_test_answers(question_id=question_id[0])
     options_text = create_options_text(options)
     await bot.send_message(chat_id=message.chat.id, text=f"{message.text}\n\nВарианты ответа:\n\n{options_text}",
