@@ -25,4 +25,3 @@ Telegram Bot API<br>
 aiogram<br>
 apscheduler<br>
 
-<h2>Скрины</h2>
